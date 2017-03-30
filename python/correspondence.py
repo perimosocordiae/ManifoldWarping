@@ -5,21 +5,21 @@ import numpy as np
 class Correspondence(object):
 
   def __init__(self, pairs=None, matrix=None):
-    assert pairs is not None or matrix is not None, \
-      'Must provide either pairwise or matrix correspondences'
+    if pairs is None and matrix is None:
+      raise ValueError('Must provide pairwise or matrix correspondences')
     self._pairs = pairs
     self._matrix = matrix
 
   def pairs(self):
     if self._pairs is None:
-      self._pairs = np.vstack(np.nonzero(self._matrix)).T
+      self._pairs = np.column_stack(self._matrix.nonzero())
     return self._pairs
 
   def matrix(self):
     if self._matrix is None:
       self._matrix = np.zeros(self._pairs.max(axis=0)+1)
-      for i in self._pairs:
-        self._matrix[i[0],i[1]] = 1
+      i, j = self._pairs.T
+      self._matrix[i,j] = 1
     return self._matrix
 
   def dist_from(self, other):
@@ -28,7 +28,7 @@ class Correspondence(object):
     B1, B2 = self._bound_row(), other._bound_row()
     gap0 = np.abs(B1[:-1,1] - B2[:-1,1])
     gap1 = np.abs(B1[1:,0] - B2[1:,0])
-    d = gap0.sum() + (gap0!=gap1).sum()/2.0
+    d = gap0.sum() + np.count_nonzero(gap0 != gap1) / 2.0
     return d / float(self.pairs()[-1,0]*other.pairs()[-1,0])
 
   def warp(self, A, XtoY=True):
@@ -36,7 +36,7 @@ class Correspondence(object):
     P = self.pairs()
     if not XtoY:
       P = np.fliplr(P)
-    warp_inds = np.zeros(A.shape[0],dtype=np.int)
+    warp_inds = np.zeros(A.shape[0], dtype=int)
     j = 0
     for i in xrange(A.shape[0]):
       while P[j,0] < i:
@@ -47,7 +47,7 @@ class Correspondence(object):
   def _bound_row(self):
     P = self.pairs()
     n = P.shape[0]
-    B = np.zeros((P[-1,0]+1,2),dtype=np.int)
+    B = np.zeros((P[-1,0]+1,2), dtype=int)
     head = 0
     while head < n:
       i = P[head,0]
@@ -68,6 +68,7 @@ if __name__ == '__main__':
   corr_k = Correspondence(matrix=neighbor_graph(data,k=3))
   corr_eps = Correspondence(matrix=neighbor_graph(data,epsilon=0.01))
   pyplot.subplot(1,2,1)
-  show_neighbor_graph(data,corr_k,'kNN graph, k = 3')
+  show_neighbor_graph(data, corr_k, 'kNN graph, k = 3')
   pyplot.subplot(1,2,2)
-  show_neighbor_graph(data, corr_eps, '$\epsilon$-ball graph, $\epsilon$ = 0.1')()
+  show_neighbor_graph(data, corr_eps,
+                      '$\epsilon$-ball graph, $\epsilon$ = 0.1')()

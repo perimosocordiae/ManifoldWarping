@@ -48,7 +48,7 @@ def gen_data(n, three_d=False):
 
 if __name__ == '__main__':
   n = 500
-  d = 2
+  d = 3
   X, Y = gen_data(n, d == 3)
   corr = Correspondence(matrix=np.eye(n))
   Wx = neighbor_graph(X,k=5)

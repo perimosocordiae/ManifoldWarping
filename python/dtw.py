@@ -44,9 +44,10 @@ def _python_dtw_path(dist):
 # Shenanigans for running the fast C version of DTW,
 # but falling back to pure python if needed
 try:
-  from scipy.weave import inline
-  from scipy.weave.converters import blitz
+  from weave import inline
+  from weave.converters import blitz
 except ImportError:
+  print('weave not installed; falling back to slow Python DTW')
   _dtw_path = _python_dtw_path
 else:
   def _dtw_path(dist):

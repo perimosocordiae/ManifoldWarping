@@ -19,17 +19,20 @@
   show_alignment(Xnew,Ynew,'nonlinear manifold aln')()
   # or just use normal pyplot functions
 '''
-
 import numpy as np
 from matplotlib import pyplot
-from alignment import TrivialAlignment, Affine, Procrustes, CCA, CCAv2, ManifoldLinear, manifold_nonlinear
+
+from alignment import (
+    TrivialAlignment, Affine, Procrustes, CCA, CCAv2,
+    ManifoldLinear, manifold_nonlinear)
 from correspondence import Correspondence
 from distance import SquaredL2
 from neighborhood import neighbor_graph
 from synthetic_data import swiss_roll, add_noise, spiral
 from util import pairwise_error, Timer
 from viz import show_alignment
-from warping import ctw, dtw, manifold_warping_linear, manifold_warping_nonlinear
+from warping import (
+    ctw, dtw, manifold_warping_linear, manifold_warping_nonlinear)
 
 
 def gen_data(n, three_d=False):
@@ -46,7 +49,7 @@ def gen_data(n, three_d=False):
 if __name__ == '__main__':
   n = 500
   d = 2
-  X,Y = gen_data(n, d==3)
+  X, Y = gen_data(n, d == 3)
   corr = Correspondence(matrix=np.eye(n))
   Wx = neighbor_graph(X,k=5)
   Wy = neighbor_graph(Y,k=5)
@@ -64,11 +67,11 @@ if __name__ == '__main__':
 
   other_aligners = (
     ('dtw', lambda: (X, dtw(X,Y).warp(X))),
-    ('nonlinear manifold aln', lambda: manifold_nonlinear(X,Y,corr,d,Wx,Wy)),
-    ('nonlinear manifold warp', lambda: manifold_warping_nonlinear(X,Y,d,Wx,Wy)[1:]),
+    ('nonlinear manifold aln',
+     lambda: manifold_nonlinear(X,Y,corr,d,Wx,Wy)),
+    ('nonlinear manifold warp',
+     lambda: manifold_warping_nonlinear(X,Y,d,Wx,Wy)[1:]),
   )
-
-  pyplot.ion()
 
   for name, aln in lin_aligners:
     pyplot.figure()
@@ -76,7 +79,6 @@ if __name__ == '__main__':
       Xnew,Ynew = aln().project(X, Y)
     print ' sum sq. error =', pairwise_error(Xnew, Ynew, metric=SquaredL2)
     show_alignment(Xnew,Ynew,name)
-    pyplot.draw()
 
   for name, aln in other_aligners:
     pyplot.figure()
@@ -84,7 +86,5 @@ if __name__ == '__main__':
       Xnew,Ynew = aln()
     print ' sum sq. error =', pairwise_error(Xnew, Ynew, metric=SquaredL2)
     show_alignment(Xnew, Ynew, name)
-    pyplot.draw()
 
-  pyplot.ioff()
   pyplot.show()

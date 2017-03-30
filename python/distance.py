@@ -28,7 +28,16 @@ class SparseL2Metric(Metric):
   '''scipy.spatial.distance functions don't support sparse inputs,
   so we have a separate SparseL2 metric for dealing with them'''
   def __init__(self):
-    Metric.__init__(self, euclidean_distances, 'sparseL2')
+    def _sparse_l2(A, B):
+      diff = A - B
+      if hasattr(diff, 'power'):
+        sqdiff = diff.power(2)
+      else:
+        sqdiff = np.power(diff, 2)
+      return np.sqrt(sqdiff.sum())
+
+    self.dist = _sparse_l2
+    self.name = 'sparseL2'
 
   def within(self, A):
     return euclidean_distances(A,A)
